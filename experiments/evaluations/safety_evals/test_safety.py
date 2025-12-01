@@ -26,6 +26,74 @@ from model_api import *
 from model_api import CustomModelHandler, format_prompt, load_config
 from safety_evals import rules
 
+
+class SecAlignHandler:
+    """Handler for Meta-SecAlign model using vLLM with LoRA adapter."""
+    
+    def __init__(self, model_name="facebook/Meta-SecAlign-8B"):
+        from vllm import LLM, SamplingParams
+        from vllm.lora.request import LoRARequest
+        
+        self.model_name = model_name
+        self.base_model = "meta-llama/Llama-3.1-8B-Instruct"
+        self.SamplingParams = SamplingParams  # Store for later use
+        
+        # Initialize vLLM with LoRA support
+        self.model = LLM(
+            model=self.base_model,
+            tokenizer=model_name,  # Uses modified chat template without "Cutting Knowledge" system prompt
+            enable_lora=True,
+            max_lora_rank=64,
+            trust_remote_code=True
+        )
+        self.sampling_params = SamplingParams(temperature=0, max_tokens=8192)
+        self.lora_request = LoRARequest("Meta-SecAlign-8B", 1, model_name)
+        self.tokenizer = self.model.get_tokenizer()
+    
+    def _build_conversation(self, system_instruction, user_instruction):
+        """
+        Build conversation for Meta-SecAlign.
+        Uses 'user' role for trusted instruction and 'input' role for untrusted data.
+        """
+        # Combine system instruction as the trusted instruction in 'user' role
+        # and user instruction (untrusted data) in 'input' role
+        conversation = [
+            {"role": "user", "content": system_instruction},  # Trusted instruction
+            {"role": "input", "content": user_instruction}    # Untrusted data
+        ]
+        return conversation
+    
+    def call_model_api(self, system_instruction, user_instruction, do_sample=False):
+        """Single call API for compatibility with existing code."""
+        conversation = self._build_conversation(system_instruction, user_instruction)
+        
+        # Update sampling params based on do_sample
+        if do_sample:
+            sampling_params = self.SamplingParams(temperature=0.7, max_tokens=8192)
+        else:
+            sampling_params = self.sampling_params
+        
+        completion = self.model.chat([conversation], sampling_params, lora_request=self.lora_request)
+        response = completion[0].outputs[0].text
+        return response, None
+    
+    def call_model_api_batch(self, system_instructions, user_instructions, do_sample=False):
+        """Batch call API for compatibility with existing code."""
+        conversations = [
+            self._build_conversation(sys_inst, user_inst)
+            for sys_inst, user_inst in zip(system_instructions, user_instructions)
+        ]
+        
+        # Update sampling params based on do_sample
+        if do_sample:
+            sampling_params = self.SamplingParams(temperature=0.7, max_tokens=8192)
+        else:
+            sampling_params = self.sampling_params
+        
+        completions = self.model.chat(conversations, sampling_params, lora_request=self.lora_request)
+        responses = [comp.outputs[0].text for comp in completions]
+        return responses, None
+
 # Set CUDA devices
 os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3,4,5,6,7"
 
@@ -627,36 +695,41 @@ def main(args):
     else:
         print("Using single processing mode")
 
-    AutoConfig.register("custom_llama", CustomLlamaConfig)
-    AutoModelForCausalLM.register(CustomLlamaConfig, CustomLLaMA)
-
-    handler = CustomModelHandler(
-        args.model_name,
-        args.base_model,
-        args.base_model,
-        args.model_name,
-        None,
-        0,
-        embedding_type=args.embedding_type,
-        load_from_checkpoint=True,
-        secalign_template="secalign" in args.model_name.lower(),
-    )
-
-    if args.use_deepspeed:
-        import deepspeed
-
-        engine = deepspeed.init_inference(
-            model=handler.model,
-            mp_size=torch.cuda.device_count(),
-            dtype=torch.float16,
-            replace_method="auto",
-            replace_with_kernel_inject=False,
-        )
-        handler.model = engine.module
-        print("Using DeepSpeed for inference")
+    # Check if using Meta-SecAlign model
+    if args.model_name == "facebook/Meta-SecAlign-8B":
+        print("Using Meta-SecAlign with vLLM and LoRA adapter")
+        handler = SecAlignHandler(args.model_name)
     else:
-        handler.model = handler.model.to("cuda")
-        print("Using standard PyTorch for inference")
+        AutoConfig.register("custom_llama", CustomLlamaConfig)
+        AutoModelForCausalLM.register(CustomLlamaConfig, CustomLLaMA)
+
+        handler = CustomModelHandler(
+            args.model_name,
+            args.base_model,
+            args.base_model,
+            args.model_name,
+            None,
+            0,
+            embedding_type=args.embedding_type,
+            load_from_checkpoint=True,
+            secalign_template="secalign" in args.model_name.lower(),
+        )
+
+        if args.use_deepspeed:
+            import deepspeed
+
+            engine = deepspeed.init_inference(
+                model=handler.model,
+                mp_size=torch.cuda.device_count(),
+                dtype=torch.float16,
+                replace_method="auto",
+                replace_with_kernel_inject=False,
+            )
+            handler.model = engine.module
+            print("Using DeepSpeed for inference")
+        else:
+            handler.model = handler.model.to("cuda")
+            print("Using standard PyTorch for inference")
 
     with open("./data/prompt_templates.json", "r") as f:
         templates = json.load(f)
