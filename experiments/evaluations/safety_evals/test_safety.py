@@ -1,6 +1,7 @@
 import sys
 
-sys.path.append("BIPIA")
+sys.path.append("..")
+sys.path.append("../..")
 import json
 import os
 import random
@@ -638,6 +639,7 @@ def main(args):
         0,
         embedding_type=args.embedding_type,
         load_from_checkpoint=True,
+        secalign_template="secalign" in args.model_name.lower(),
     )
 
     if args.use_deepspeed:

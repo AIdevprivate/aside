@@ -47,8 +47,14 @@ from transformers import (
     Qwen2ForCausalLM,
     pipeline,
 )
-import deepspeed
-from deepspeed.utils.zero_to_fp32 import load_state_dict_from_zero_checkpoint
+try:
+    import deepspeed
+    from deepspeed.utils.zero_to_fp32 import load_state_dict_from_zero_checkpoint
+    DEEPSPEED_AVAILABLE = True
+except Exception as e:
+    print(f"Warning: DeepSpeed not available: {e}")
+    DEEPSPEED_AVAILABLE = False
+    deepspeed = None
 
 from model import *
 
@@ -242,6 +248,7 @@ class CustomModelHandler:
         model_dtype=torch.bfloat16,
         rank=None,
         post_init_rotation=False,
+        secalign_template=False,
     ) -> None:
         """
         Initialize the model handler with specified configuration.
@@ -298,6 +305,7 @@ class CustomModelHandler:
         self.gradual_rotation = gradual_rotation
         self.post_init_rotation = post_init_rotation
         self.debug_printed = False
+        self.secalign_template = secalign_template
         if access_token:
             login(token=access_token)
         self._setup_hf_model()  # Stores Hugging Face models and tokenizers
@@ -1207,6 +1215,7 @@ class CustomModelHandler:
                 system_instruction=sys_inst,
                 user_instruction=usr_inst,
                 split_chat=self.split_chat,
+                secalign_template=self.secalign_template,
             )
             model_inputs_for_logging.append(text_sequences)
 
@@ -1383,6 +1392,7 @@ class CustomModelHandler:
 
         CONFIG_CLASS_REGISTRY = {
             "llama": CustomLlamaConfig,
+            "secalign": CustomLlamaConfig,
             "qwen": CustomQwenConfig,
             "mistral": CustomMistralConfig,
         }
@@ -1393,6 +1403,9 @@ class CustomModelHandler:
                 "single_emb": LlamaForCausalLM,
                 "ise": LlamaISE,
                 "forward_rot": LlamaForwardRot,
+            },
+            "secalign": {
+                "single_emb": LlamaForCausalLM,
             },
             "qwen": {
                 "single_emb": Qwen2ForCausalLM,
@@ -1466,6 +1479,7 @@ def format_model_input(
     user_instruction: str,
     assistant_message: str = None,
     split_chat=False,
+    secalign_template=False,
 ) -> List[Tuple[str, str]]:
     """
     Format model input according to embedding type requirements.
@@ -1480,7 +1494,7 @@ def format_model_input(
         user_instruction (str): The user/data input
         assistant_message (str, optional): Pre-filled assistant response
         split_chat (bool): Whether to split for instruction-data separation
-        
+        secalign_template (bool): Whether to use secalign chat template (User and Input roles, instead of System and User).
     Returns:
         list: List of (text, role) tuples for tokenization
             - For vanilla models: [("full_chat", "inst")]
@@ -1499,10 +1513,16 @@ def format_model_input(
     """
   
     if tokenizer.chat_template is not None:
-        chat = [
-            {"role": "system", "content": system_instruction},
-            {"role": "user", "content": user_instruction},
-        ]
+        if secalign_template:
+            chat = [
+                {"role": "user", "content": system_instruction},
+                {"role": "input", "content": user_instruction},
+            ]
+        else:
+            chat = [
+                {"role": "system", "content": system_instruction},
+                {"role": "user", "content": user_instruction},
+            ]
         if assistant_message is not None:
             chat.append({"role": "assistant", "content": assistant_message})
 
