@@ -1,3 +1,9 @@
+plots
+scripts
+transformer_cache
+*.json
+*.jsonl
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
