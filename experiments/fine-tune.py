@@ -58,6 +58,7 @@ from torch.nn.utils.rnn import pad_sequence
 
 from deepspeed.utils.zero_to_fp32 import convert_zero_checkpoint_to_fp32_state_dict
 from embeddings_init import generate_isoclinic_rotation_matrix
+import wandb
 
 
 
@@ -149,7 +150,7 @@ class AlpacaDataset(Dataset):
             segment_ids = torch.hstack((segment_ids, torch.Tensor([[(1 + len(text_sequences)) % 2]]))).long() 
 
         if not self.printed_input: 
-            print("Input Text Sequence:\n", text_sequences, input_ids, segment_ids, attention_mask)
+            # print("Input Text Sequence:\n", text_sequences, input_ids, segment_ids, attention_mask)  # Disabled to reduce output
             #print("Shapes", input_ids.shape, segment_ids.shape, attention_mask.shape)
             self.printed_input = True
         if segment_ids is not None:
@@ -229,7 +230,7 @@ class CustomSFTTrainer(SFTTrainer):
             # Track and log training loss
             train_loss = logs.get("loss", None)
             if train_loss is not None:
-                logging.info(f"Step {self.state.global_step}: Train Loss = {train_loss:.4f}")
+                # logging.info(f"Step {self.state.global_step}: Train Loss = {train_loss:.4f}")  # Disabled to reduce output
                 self.loss_logs["train_loss"].append(train_loss)
                 self.loss_logs["steps"].append(self.state.global_step)
 
@@ -345,7 +346,8 @@ class EmbeddingRotationCallback(TrainerCallback):
 
             
             if dist.get_rank() == 0:
-                print(f"On step {state.global_step} set embedding rotation angle to {rotation_alpha}")
+                # print(f"On step {state.global_step} set embedding rotation angle to {rotation_alpha}")  # Disabled to reduce output
+                pass
             
         return control
 
@@ -378,8 +380,9 @@ def main(model_family: str, emb_type: str, train_version: str, model_ix: int, ru
     config = load_config(config_path)
 
     if dist.get_rank() == 0:
-        print(config)
-        print("\n", config["models"][emb_type]["pure_models"])
+        # print(config)  # Disabled to reduce output
+        # print("\n", config["models"][emb_type]["pure_models"])  # Disabled to reduce output
+        pass
 
     pure_model_info = config["models"][emb_type]["pure_models"][model_ix]
     checkpoint_to_load_to = pure_model_info["checkpoint_to_load_to"]
@@ -410,9 +413,13 @@ def main(model_family: str, emb_type: str, train_version: str, model_ix: int, ru
         format="%(asctime)s - %(levelname)s - %(message)s",
         handlers=[
             logging.FileHandler(log_file),  # Save to file
-            logging.StreamHandler()  # Print to console
+            # logging.StreamHandler()  # Print to console - disabled to reduce output
         ]
     )
+
+    # Initialize wandb
+    if dist.get_rank() == 0 and "wandb" in hparams.get("report_to", []):
+        wandb.init(project="aside", name=run_name, config=hparams)
 
     # Load dataset
     train_data = load_dataset("json", data_files=train_dataset_path)["train"]
@@ -470,7 +477,7 @@ def main(model_family: str, emb_type: str, train_version: str, model_ix: int, ru
         warmup_ratio=hparams["warmup_ratio"],
         logging_dir=train_logs_path,
         logging_steps=hparams["logging_steps"],
-        log_level="info",
+        log_level="warning",
         eval_strategy=hparams["evaluation_strategy"],
         save_strategy=hparams["save_strategy"],
         eval_steps=hparams["eval_steps"],
@@ -504,7 +511,7 @@ def main(model_family: str, emb_type: str, train_version: str, model_ix: int, ru
         loss_log_file=log_file_json,
         callbacks=callbacks,
     )
-    print('Trainer created')
+    # print('Trainer created')  # Disabled to reduce output
     
     # Start training
     trainer.train()
@@ -587,7 +594,7 @@ if __name__ == "__main__":
     parser.add_argument("--activation_checkpointing", type=bool, default=False,
                         help="Whether to use gradient checkpointing.")
     parser.add_argument("--remove_unused_columns", type=bool, default=False, help="Remove unused columns in dataset.")
-    parser.add_argument("--report_to", type=list, default=["none"],
+    parser.add_argument("--report_to", type=list, default=["wandb"],
                         help="Reporting framework (e.g., wandb, tensorboard).")
     parser.add_argument("--embedding_init", type=str, default=None, choices=[None, "copy", "rot_ind", "rot_isoclinic"],
                         help="Embedding initialization.")
