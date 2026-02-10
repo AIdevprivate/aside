@@ -31,11 +31,9 @@ from typing import Dict, List, Optional, Tuple, Union
 
 # import deepspeed
 import einops
-import openai
 import torch
 import torch.distributed as dist
 from huggingface_hub import login
-from peft import LoraConfig, get_peft_model
 from tqdm import tqdm
 from transformers import (
     AutoModelForCausalLM,
@@ -45,6 +43,10 @@ from transformers import (
     LlamaForCausalLM,
     Qwen2Config,
     Qwen2ForCausalLM,
+    Qwen3Config,
+    Qwen3ForCausalLM,
+    MistralConfig,
+    MistralForCausalLM,
     pipeline,
 )
 try:
@@ -384,7 +386,7 @@ class CustomModelHandler:
                 system_prompt_len = 48
                 template_infix_len = 14
                 template_suffix_len = 4
-        elif "Qwen2.5-7B" in self.data_model_path:
+        elif "Qwen2.5-7B" in self.data_model_path or "Qwen3-8B" in self.data_model_path:
             if template_type == "base":
                 system_prompt_len = 32
                 template_infix_len = 6
@@ -1392,8 +1394,13 @@ class CustomModelHandler:
 
         CONFIG_CLASS_REGISTRY = {
             "llama": CustomLlamaConfig,
+<<<<<<< HEAD
             "secalign": CustomLlamaConfig,
             "qwen": CustomQwenConfig,
+=======
+            "qwen2.5": CustomQwenConfig,
+            "qwen3": CustomQwen3Config,
+>>>>>>> f208468 (Add Qwen3 model and related scripts for inference and evaluation compatibility.)
             "mistral": CustomMistralConfig,
         }
 
@@ -1404,13 +1411,22 @@ class CustomModelHandler:
                 "ise": LlamaISE,
                 "forward_rot": LlamaForwardRot,
             },
+<<<<<<< HEAD
             "secalign": {
                 "single_emb": LlamaForCausalLM,
             },
             "qwen": {
+=======
+            "qwen2.5": {
+>>>>>>> f208468 (Add Qwen3 model and related scripts for inference and evaluation compatibility.)
                 "single_emb": Qwen2ForCausalLM,
                 "ise": QwenISE,
                 "forward_rot": QwenForwardRot,
+            },
+            "qwen3": {
+                "single_emb": Qwen3ForCausalLM,
+                "ise": Qwen3ISE,
+                "forward_rot": Qwen3ForwardRot,
             },
             "mistral": {
                 "single_emb": MistralBase,

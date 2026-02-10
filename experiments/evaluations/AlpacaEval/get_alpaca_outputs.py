@@ -23,14 +23,13 @@ Usage:
 import sys
 import os
 
-if "../.." not in sys.path:
-    sys.path.append("../..")
-
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-
-# Add the parent directory to sys.path if it's not already there
-if parent_dir not in sys.path:
-    sys.path.insert(0, parent_dir)
+# Ensure the absolute 'experiments' directory is on sys.path so we can import
+# sibling modules like 'model_api' and 'model' that live in
+# projects/aside/experiments/
+_script_dir = os.path.dirname(os.path.abspath(__file__))
+_experiments_dir = os.path.dirname(os.path.dirname(_script_dir))
+if _experiments_dir not in sys.path:
+    sys.path.insert(0, _experiments_dir)
 
 import argparse
 # os.environ["CUDA_VISIBLE_DEVICES"] = "0"
@@ -88,16 +87,10 @@ def generate_results_batch(handler, use_input, remove_tags, max_new_tokens, temp
         data_list = []
         empty_data = ""
         for example in batch_data:
-            instruction = example["instruction"]
-            data = example["input"] if use_input else empty_data
-
-            # special for 
-            instruction = f"{example['instruction']}\n"
-            data = f"{example['input']}\n" if use_input else ""
-
+            instruction = f"{example['instruction']}"
+            data = f"{example['input']}" if use_input else ""
 
             batch_instructions.append(instruction + data)
-
 
             instruction_text = format_prompt(instruction, template, "system")
             data_text = format_prompt(empty_data, template, "user")
@@ -150,6 +143,11 @@ SINGLE_EMB_PATHS = {
         "original": "Qwen/Qwen2.5-7B",
         "original_inst": "Qwen/Qwen2.5-7B-Instruct",
         "base":  "Qwen/Qwen2.5-7B",
+    },
+    "Qwen3-8B": {
+        "original": "Qwen/Qwen3-8B-Base",
+        "original_inst": "Qwen/Qwen3-8B",
+        "base": "Qwen/Qwen3-8B-Base",
     },
     "Mistral-7B-v0.3": {
         "original": "mistralai/Mistral-7B-v0.3",
@@ -230,7 +228,7 @@ def get_model_outputs(data_path, data_size, use_input, remove_tags, model_name, 
     handler.model.to(device)
     handler.model.config.use_cache = True
 
-    with open("../../data/prompt_templates.json", "r") as f:
+    with open(os.path.join(_experiments_dir, "data", "prompt_templates.json"), "r") as f:
         templates = json.load(f)
     template = templates[0]
 
@@ -239,7 +237,10 @@ def get_model_outputs(data_path, data_size, use_input, remove_tags, model_name, 
 
     # Get parent dir of data_path
     #short_model_name = model_name.split("/")[-1]
-    model_name = model_name.split("models/")[1]
+    if "models/" in model_name:
+        model_name = model_name.split("models/")[1]
+    else:
+        model_name = model_name
     short_model_name = model_name.replace("/", "_")
     save_filename = f"{short_model_name}_l{data_size}_s{seed}.json"
     save_path = os.path.join(save_dir, save_filename)

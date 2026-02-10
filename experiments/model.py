@@ -740,6 +740,102 @@ class QwenForwardRot(ForwardRotMixin, QwenBase):
             self.register_buffer("rotation_matrix", rotation_matrix)
 
 
+
+# ==========================
+# Qwen3 (Qwen/Qwen3-*) variants
+# Use official Transformers Qwen3 classes
+# ==========================
+
+from transformers import Qwen3Config, Qwen3ForCausalLM
+
+
+class CustomQwen3Config(Qwen3Config):
+    """Extended Qwen3 configuration for ASIDE experiments."""
+    model_type = "qwen3"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+
+class Qwen3Base(Qwen3ForCausalLM):
+    """Base Qwen3 model with tokenizer customization."""
+
+    def __init__(self, config: Qwen3Config):
+        super().__init__(config)
+
+    @classmethod
+    def _customize_tokenizer(cls, tokenizer, model_path):
+        # Keep consistent with Qwen2 defaults; adjust if your tokenizer differs
+        tokenizer.pad_token = "<|endoftext|>"
+        tokenizer.pad_token_id = tokenizer.convert_tokens_to_ids("<|endoftext|>")
+        tokenizer.bos_token = "<|endoftext|>"
+        tokenizer.bos_token_id = tokenizer.convert_tokens_to_ids(tokenizer.bos_token)
+        tokenizer.padding_side = "left"
+        if tokenizer.pad_token is None:
+            tokenizer.pad_token = tokenizer.eos_token
+
+
+class Qwen3ISE(ISEMixin, Qwen3Base):
+    """Qwen3 model with ISE baseline implementation."""
+
+    def __init__(self, config: Qwen3Config):
+        super().__init__(config)
+        self.num_segments = getattr(config, "num_segments", 2)
+        self.segment_embedding = nn.Embedding(self.num_segments, config.hidden_size)
+        # Ensure Trainer keeps segment_ids
+        try:
+            if not hasattr(self.config, "model_input_names") or self.config.model_input_names is None:
+                self.config.model_input_names = ["input_ids", "attention_mask"]
+            if "segment_ids" not in self.config.model_input_names:
+                self.config.model_input_names.append("segment_ids")
+        except Exception:
+            pass
+
+
+class Qwen3ForwardRot(ForwardRotMixin, Qwen3Base):
+    """Qwen3 model with ASIDE (ForwardRot) implementation."""
+
+    def __init__(self, config: Qwen3Config):
+        super().__init__(config)
+        self.config = config
+        dim = config.hidden_size
+        self.global_rotation_alpha = config.rotation_alpha
+        self.rotation_alpha = None
+        self.gradual_rotation = getattr(config, "gradual_rotation", False)
+        self.learned_rotation = getattr(config, "learned_rotation", False)
+        self.add_linear_shift = getattr(config, "add_linear_shift", False)
+        self.rotation_direction = getattr(self.config, "rotation_direction", "right")
+        device = next(self.parameters()).device
+        model_dtype = next(self.parameters()).dtype
+
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+        if self.add_linear_shift:
+            self.num_segments = getattr(config, "num_segments", 2)
+            self.segment_embedding = nn.Embedding(self.num_segments, config.hidden_size)
+
+        if self.gradual_rotation:
+            rotation_matrix = generate_isoclinic_rotation_matrix(
+                dim, 0, device, model_dtype
+            ).detach()
+        else:
+            rotation_matrix = generate_isoclinic_rotation_matrix(
+                dim, self.global_rotation_alpha, device, model_dtype
+            ).detach()
+        if self.learned_rotation:
+            self.rotation_matrix = nn.Parameter(rotation_matrix)
+        else:
+            self.register_buffer("rotation_matrix", rotation_matrix)
+        # Ensure Trainer keeps segment_ids
+        try:
+            if not hasattr(self.config, "model_input_names") or self.config.model_input_names is None:
+                self.config.model_input_names = ["input_ids", "attention_mask"]
+            if "segment_ids" not in self.config.model_input_names:
+                self.config.model_input_names.append("segment_ids")
+        except Exception:
+            pass
+
+
 ###########
 
 # Mistral
