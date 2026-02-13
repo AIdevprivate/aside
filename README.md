@@ -44,6 +44,10 @@ module load cuda/12.4
 source .venv/bin/activate  
 ```
 
+### Using our fine-tuned models
+
+You can find the models we fine-tuned and evaluated in our paper [in our Huggingface collections](https://huggingface.co/Embeddings-Collab/collections). 
+
 ### Training ASIDE
 ```bash
 cd experiments
@@ -134,6 +138,8 @@ Please see `experiments/interp/README.md` for a dedicated step-by-step guide on 
 ## 🚀 Loading and Using Models
 
 After training, you can load and use ASIDE models for inference. Here's how to set up and run the model. For instance, if the following script is saved as `experiments/example.py`, run `deepspeed --num_gpus=1 experiments/example.py`.
+
+You can also [download our trained ASIDE, ISE and Vanilla models here](https://huggingface.co/Embeddings-Collab/collections).
 
 ### Basic Usage
 ```python
