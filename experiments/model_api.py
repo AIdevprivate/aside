@@ -1394,13 +1394,10 @@ class CustomModelHandler:
 
         CONFIG_CLASS_REGISTRY = {
             "llama": CustomLlamaConfig,
-<<<<<<< HEAD
             "secalign": CustomLlamaConfig,
             "qwen": CustomQwenConfig,
-=======
             "qwen2.5": CustomQwenConfig,
             "qwen3": CustomQwen3Config,
->>>>>>> f208468 (Add Qwen3 model and related scripts for inference and evaluation compatibility.)
             "mistral": CustomMistralConfig,
         }
 
@@ -1411,14 +1408,10 @@ class CustomModelHandler:
                 "ise": LlamaISE,
                 "forward_rot": LlamaForwardRot,
             },
-<<<<<<< HEAD
             "secalign": {
                 "single_emb": LlamaForCausalLM,
             },
-            "qwen": {
-=======
             "qwen2.5": {
->>>>>>> f208468 (Add Qwen3 model and related scripts for inference and evaluation compatibility.)
                 "single_emb": Qwen2ForCausalLM,
                 "ise": QwenISE,
                 "forward_rot": QwenForwardRot,

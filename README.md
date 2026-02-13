@@ -22,6 +22,7 @@ If your system uses Environment Modules you can satisfy the requirements like th
 ```bash
 module load python/3.12.8
 module load cuda/12.4
+module load openmpi  
 ```
 
 ### Installation
