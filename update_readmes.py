@@ -111,16 +111,9 @@ def parse_model_name(model_id: str):
         print(f"  WARNING: Cannot identify embedding type for {model_id}")
         return None
 
-    # ── from_base vs from_inst ───────────────────────────────────────────
-    if "from_inst" in short_name:
-        from_variant = "inst"
-    elif "from_base" in short_name:
-        from_variant = "base"
-    else:
-        # Early SFT versions default to base
-        from_variant = "base"
-
-    base_model_hf = instruct_hf if from_variant == "inst" else base_hf
+    # ── All models are trained from the base version ────────────────────
+    from_variant = "base"
+    base_model_hf = base_hf
 
     # ── norotation flag ──────────────────────────────────────────────────
     norotation = "_norotation" in short_name
@@ -163,8 +156,6 @@ def generate_readme(info: dict) -> str:
     else:
         augment_phrase = f"augmented and fine-tuned with the **{emb_label}** modification"
 
-    from_label = "base" if from_variant == "base" else "instruction-tuned"
-
     norotation_note = ""
     if norotation:
         norotation_note = (
@@ -174,8 +165,6 @@ def generate_readme(info: dict) -> str:
         )
 
     base_model_link = f"[**{human_name}**](https://huggingface.co/{base_model_hf})"
-    if from_variant == "inst":
-        base_model_link = f"[**{human_name} Instruct**](https://huggingface.co/{base_model_hf})"
 
     readme = f"""---
 library_name: transformers
@@ -184,7 +173,7 @@ tags: []
 
 # {title}
 
-This is the {from_label} {base_model_link} model {augment_phrase}, trained and evaluated in the paper [ASIDE: Architectural Separation of Instructions and Data in Language Models](https://openreview.net/forum?id=C81TnwHiRM).
+This is the {base_model_link} model {augment_phrase}, trained and evaluated in the paper [ASIDE: Architectural Separation of Instructions and Data in Language Models](https://openreview.net/forum?id=C81TnwHiRM).
 
 ## Model Description
 {emb_desc}{norotation_note}
