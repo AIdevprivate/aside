@@ -12,6 +12,15 @@
         "single_emb": {
             "pure_models": [
                 {
+                    "name": "single_emb_from_instr",
+                    "desc": "Qwen2.5 7B instruction-tuned model",
+                    "checkpoint_to_load_from": null,
+                    "checkpoint_to_load_to": "./models/Qwen2.5-7B/single_inst",
+                    "chat_template_path": null,
+                    "instruct_model_path": "Qwen/Qwen2.5-7B-Instruct",
+                    "data_model_path": "Qwen/Qwen2.5-7B-Instruct"
+                },
+                {
                     "name": "dd_pure",
                     "desc": "Qwen2.5 7B base model",
                     "checkpoint_to_load_from": null,
@@ -25,6 +34,15 @@
         "ise": {
             "pure_models": [
                 {
+                    "name": "ise_from_instr",
+                    "desc": "Qwen2.5 7B instruction-tuned model",
+                    "checkpoint_to_load_from": null,
+                    "checkpoint_to_load_to": "./models/Qwen2.5-7B/ise_inst",
+                    "chat_template_path": null,
+                    "instruct_model_path": "Qwen/Qwen2.5-7B-Instruct",
+                    "data_model_path": "Qwen/Qwen2.5-7B-Instruct"
+                },
+                {
                     "name": "ise",
                     "desc": "Qwen2.5 7B base model",
                     "checkpoint_to_load_from": null,
@@ -37,6 +55,15 @@
         },
         "forward_rot": {
             "pure_models": [
+                {
+                    "name": "forward_rot_from_instr",
+                    "desc": "Qwen2.5 7B instruction-tuned model",
+                    "checkpoint_to_load_from": null,
+                    "checkpoint_to_load_to": "./models/Qwen2.5-7B/forward_rot_inst",
+                    "chat_template_path": null,
+                    "instruct_model_path": "Qwen/Qwen2.5-7B-Instruct",
+                    "data_model_path": "Qwen/Qwen2.5-7B-Instruct"
+                },
                 {
                     "name": "forward_rot",
                     "desc": "Qwen2.5 7B base model",

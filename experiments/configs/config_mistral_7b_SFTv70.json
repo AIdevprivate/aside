@@ -10,7 +10,15 @@
     "models": {
         "single_emb": {
             "pure_models": [
-                {},
+                {
+                    "name": "single_emb_from_instr",
+                    "desc": "Mistral 7B instruction-tuned model",
+                    "checkpoint_to_load_from": null,
+                    "checkpoint_to_load_to": "./models/Mistral-7B-v0.3/single_inst",
+                    "chat_template_path": null,
+                    "instruct_model_path": "mistralai/Mistral-7B-Instruct-v0.3",
+                    "data_model_path": "mistralai/Mistral-7B-Instruct-v0.3"
+                },
                 {
                     "name": "single_emb",
                     "desc": "Mistral 7B base model",
@@ -24,7 +32,15 @@
         },
         "ise": {
             "pure_models": [
-                {},
+                {
+                    "name": "ise_from_instr",
+                    "desc": "Mistral 7B instruction-tuned model",
+                    "checkpoint_to_load_from": null,
+                    "checkpoint_to_load_to": "./models/Mistral-7B-v0.3/ise_inst",
+                    "chat_template_path": null,
+                    "instruct_model_path": "mistralai/Mistral-7B-Instruct-v0.3",
+                    "data_model_path": "mistralai/Mistral-7B-Instruct-v0.3"
+                },
                 {
                     "name": "ise",
                     "desc": "Mistral 7B base model",
@@ -38,7 +54,15 @@
         },
         "forward_rot": {
             "pure_models": [
-                {},
+                {
+                    "name": "forward_rot_from_instr",
+                    "desc": "Mistral 7B instruction-tuned model",
+                    "checkpoint_to_load_from": null,
+                    "checkpoint_to_load_to": "./models/Mistral-7B-v0.3/forward_rot_inst",
+                    "chat_template_path": null,
+                    "instruct_model_path": "mistralai/Mistral-7B-Instruct-v0.3",
+                    "data_model_path": "mistralai/Mistral-7B-Instruct-v0.3"
+                },
                 {
                     "name": "forward_rot",
                     "desc": "Mistral 7B base model",
