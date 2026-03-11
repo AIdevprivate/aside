@@ -139,7 +139,7 @@ Please see `experiments/interp/README.md` for a dedicated step-by-step guide on 
 
 After training, you can load and use ASIDE models for inference. Here's how to set up and run the model. For instance, if the following script is saved as `experiments/example.py`, run `deepspeed --num_gpus=1 experiments/example.py`.
 
-You can also [download our trained ASIDE, ISE and Vanilla models here](https://huggingface.co/Embeddings-Collab/collections).
+You can also [download our trained ASIDE, ISE and Vanilla models here](https://huggingface.co/ISTA-MLCV/collections).
 
 ### Basic Usage
 ```python
