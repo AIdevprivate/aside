@@ -2,6 +2,7 @@
 
 
 [![Paper](https://img.shields.io/badge/Paper-arXiv-red.svg)](https://arxiv.org/abs/2503.10566)
+[![HuggingFace](https://img.shields.io/badge/🤗_HuggingFace-Models-yellow.svg)](https://huggingface.co/ISTA-MLCV/collections)
 [![Python 3.12](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
@@ -46,7 +47,7 @@ source .venv/bin/activate
 
 ### Using our fine-tuned models
 
-You can find the models we fine-tuned and evaluated in our paper [in our Huggingface collections](https://huggingface.co/Embeddings-Collab/collections). 
+You can find the models we fine-tuned and evaluated in our paper [in our Huggingface collections](https://huggingface.co/ISTA_MLCV/collections). 
 
 ### Training ASIDE
 ```bash
