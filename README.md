@@ -47,7 +47,7 @@ source .venv/bin/activate
 
 ### Using our fine-tuned models
 
-You can find the models we fine-tuned and evaluated in our paper [in our Huggingface collections](https://huggingface.co/ISTA_MLCV/collections). 
+You can find the models we fine-tuned and evaluated in our paper [in our Huggingface collections](https://huggingface.co/ISTA-MLCV/collections). 
 
 ### Training ASIDE
 ```bash
