@@ -138,6 +138,11 @@ DOUBLE_EMB_PATHS = {
         "data_model_path": "Qwen/Qwen2.5-7B",
         "tokenizer_path": "Qwen/Qwen2.5-7B-Instruct",
     },
+    "Qwen3-8B": {
+        "instruct_model_path": "Qwen/Qwen3-8B-Base",
+        "data_model_path": "Qwen/Qwen3-8B-Base",
+        "tokenizer_path": "Qwen/Qwen3-8B",
+    },
     "Mistral-7B-v0.3": {
         "instruct_model_path": "mistralai/Mistral-7B-v0.3",
         "data_model_path": "mistralai/Mistral-7B-v0.3",
@@ -170,6 +175,11 @@ SINGLE_EMB_PATHS = {
         "original": "Qwen/Qwen2.5-7B",
         "original_inst": "Qwen/Qwen2.5-7B-Instruct",
         "base":  "Qwen/Qwen2.5-7B",
+    },
+    "Qwen3-8B": {
+        "original": "Qwen/Qwen3-8B-Base",
+        "original_inst": "Qwen/Qwen3-8B",
+        "base": "Qwen/Qwen3-8B-Base",
     },
     "Mistral-7B-v0.3": {
         "original": "mistralai/Mistral-7B-v0.3",
