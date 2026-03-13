@@ -32,3 +32,5 @@ deepspeed==0.18.2
 thefuzz==0.22.1
 vllm
 mpi4py
+alpaca-eval=0.6.6
+wandb
