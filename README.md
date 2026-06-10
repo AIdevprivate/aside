@@ -248,10 +248,10 @@ aside/
 ```bibtex
 
 @inproceedings{zverev2025aside,
-  author       = {Zverev, Egor and Kortukov, Evgenii and Panfilov, Alexander and Volkova, Alexandra and Tabesh, Soroush and Lapuschkin, Sebastian and Samek, Wojciech and Lampert, Christoph H.},
-  title        = {ASIDE: Architectural Separation of Instructions and Data in Language Models},
-  booktitle    = {ICLR 2025 Building Trust in LLMs and LLM Applications Workshop},
-  year         = {2025},
+  title={{ASIDE}: Architectural Separation of Instructions and Data in Language Models},
+  author={Zverev, Egor and Kortukov, Evgenii and Panfilov, Alexander and Volkova, Alexandra and Tabesh, Soroush and Lapuschkin, Sebastian and Samek, Wojciech and Lampert, Christoph H},
+  booktitle={International Conference on Learning Representations (ICLR)},
+  year={2026}
 }
 ```
 
