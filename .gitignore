@@ -192,3 +192,6 @@ evals/e_runscript.sh
 struq/data/
 struq/transformer_cache/
 old_README.md
+
+# ASIDE review: downloaded dataset samples (large, reproducible)
+downloaded_data/
