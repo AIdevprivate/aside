@@ -93,7 +93,7 @@ def generate_results_batch(handler, use_input, remove_tags, max_new_tokens, temp
             batch_instructions.append(instruction + data)
 
             instruction_text = format_prompt(instruction, template, "system")
-            data_text = format_prompt(empty_data, template, "user")
+            data_text = format_prompt(data, template, "user")
             inst_list.append(instruction_text)
             data_list.append(data_text)
 
