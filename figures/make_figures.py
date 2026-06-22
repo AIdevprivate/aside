@@ -18,7 +18,7 @@ import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 R = json.load(open(os.path.join(HERE, "results.json")))
-C = R["comparisons"]; S = R["utility_splits"]
+C = R["comparisons"]; S = R["utility_splits"]; I805 = R["utility_input805"]
 V = ["aside", "ise", "single_emb"]; x = np.arange(3); w = 0.35
 RAW = 0  # index into [raw, lc, n]
 
@@ -37,8 +37,8 @@ def grp(a, d1, d2, l1, l2, title, c1="#4C72B0", c2="#DD8452"):
 fig, ax = plt.subplots(1, 4, figsize=(22, 5))
 grp(ax[0], [raw(f"{v}_eval", "GPT-4o") for v in V], [raw(f"{v}_eval", "Qwen3-14B") for v in V],
     "GPT-4o", "Qwen3-14B", "AlpacaEval-805 utility vs davinci-003\n(data merged IN INSTRUCTION). RAW")
-grp(ax[1], [raw(f"{v}_fixed_vs_dav", "GPT-4o") for v in V], [raw(f"{v}_fixed_vs_dav", "Qwen3-14B") for v in V],
-    "GPT-4o", "Qwen3-14B", "AlpacaFarm-208 utility vs davinci-003\n(data in INPUT field). RAW")
+grp(ax[1], [I805[v]["GPT-4o"][RAW] for v in V], [I805[v]["Qwen3-14B"][RAW] for v in V],
+    "GPT-4o", "Qwen3-14B", "AlpacaEval-805 utility vs davinci-003\n(data in INPUT field). RAW")
 grp(ax[2], [raw(f"{v}_fixed_vs_dav", "GPT-4o") for v in V], [raw(f"{v}_merged208", "GPT-4o") for v in V],
     "data in INPUT field", "data in INSTRUCTION", "Data placement (AlpacaFarm-208), GPT-4o\ninput-field vs instruction. RAW",
     c1="#8172B3", c2="#CCB974")
