@@ -1,0 +1,265 @@
+{
+  "meta": {
+    "judges": [
+      "GPT-4o",
+      "Qwen3-14B"
+    ],
+    "metric": "AlpacaEval2.0 weighted; values are [raw_win_rate, length_controlled_win_rate, n]",
+    "baseline": "text-davinci-003 (alpaca_farm output for the 208 farm comparisons; alpaca_eval output for the 805 utility)",
+    "datasets": {
+      "alpaca_eval_805": "data merged in instruction (use_input=False)",
+      "alpaca_farm_208": "data in separate input field / data channel (use_input=True)"
+    },
+    "utility_input805": "full AlpacaEval-805 with data in the INPUT field (use_input=True); 597 no-data examples reuse the panel-1 result, 208 data examples judged vs the same davinci-003 baseline"
+  },
+  "comparisons": {
+    "aside_eval": {
+      "GPT-4o": [
+        71.6,
+        38.7,
+        805
+      ],
+      "Qwen3-14B": [
+        81.0,
+        58.3,
+        805
+      ]
+    },
+    "ise_eval": {
+      "GPT-4o": [
+        86.0,
+        54.0,
+        805
+      ],
+      "Qwen3-14B": [
+        91.2,
+        70.6,
+        805
+      ]
+    },
+    "single_emb_eval": {
+      "GPT-4o": [
+        84.5,
+        52.1,
+        805
+      ],
+      "Qwen3-14B": [
+        90.6,
+        72.2,
+        805
+      ]
+    },
+    "aside_fixed_vs_dav": {
+      "GPT-4o": [
+        43.4,
+        21.1,
+        208
+      ],
+      "Qwen3-14B": [
+        59.5,
+        37.5,
+        208
+      ]
+    },
+    "ise_fixed_vs_dav": {
+      "GPT-4o": [
+        74.9,
+        49.8,
+        208
+      ],
+      "Qwen3-14B": [
+        87.6,
+        74.2,
+        208
+      ]
+    },
+    "single_emb_fixed_vs_dav": {
+      "GPT-4o": [
+        71.3,
+        46.6,
+        208
+      ],
+      "Qwen3-14B": [
+        85.6,
+        72.4,
+        208
+      ]
+    },
+    "aside_merged208": {
+      "GPT-4o": [
+        55.5,
+        30.1,
+        208
+      ],
+      "Qwen3-14B": [
+        73.7,
+        53.1,
+        208
+      ]
+    },
+    "ise_merged208": {
+      "GPT-4o": [
+        73.4,
+        48.4,
+        208
+      ],
+      "Qwen3-14B": [
+        82.9,
+        65.4,
+        208
+      ]
+    },
+    "single_emb_merged208": {
+      "GPT-4o": [
+        69.1,
+        43.3,
+        208
+      ],
+      "Qwen3-14B": [
+        83.7,
+        69.3,
+        208
+      ]
+    },
+    "aside_norot_vs_dav": {
+      "GPT-4o": [
+        70.2,
+        44.3,
+        208
+      ],
+      "Qwen3-14B": [
+        84.1,
+        67.5,
+        208
+      ]
+    }
+  },
+  "utility_splits": {
+    "GPT-4o": {
+      "aside": {
+        "full": [
+          71.6,
+          38.7
+        ],
+        "data208": [
+          58.1,
+          31.3
+        ],
+        "nodata597": [
+          76.3,
+          49.7
+        ]
+      },
+      "ise": {
+        "full": [
+          86.0,
+          54.0
+        ],
+        "data208": [
+          72.8,
+          50.0
+        ],
+        "nodata597": [
+          90.6,
+          65.1
+        ]
+      },
+      "single_emb": {
+        "full": [
+          84.5,
+          52.1
+        ],
+        "data208": [
+          72.0,
+          50.0
+        ],
+        "nodata597": [
+          88.8,
+          61.8
+        ]
+      }
+    },
+    "Qwen3-14B": {
+      "aside": {
+        "full": [
+          81.0,
+          58.3
+        ],
+        "data208": [
+          75.1,
+          56.0
+        ],
+        "nodata597": [
+          83.1,
+          57.1
+        ]
+      },
+      "ise": {
+        "full": [
+          91.2,
+          70.6
+        ],
+        "data208": [
+          82.0,
+          64.5
+        ],
+        "nodata597": [
+          94.5,
+          78.1
+        ]
+      },
+      "single_emb": {
+        "full": [
+          90.6,
+          72.2
+        ],
+        "data208": [
+          82.9,
+          67.2
+        ],
+        "nodata597": [
+          93.3,
+          76.9
+        ]
+      }
+    }
+  },
+  "utility_input805": {
+    "aside": {
+      "GPT-4o": [
+        67.9,
+        33.9,
+        805
+      ],
+      "Qwen3-14B": [
+        77.2,
+        50.2,
+        805
+      ]
+    },
+    "ise": {
+      "GPT-4o": [
+        86.2,
+        53.0,
+        805
+      ],
+      "Qwen3-14B": [
+        92.8,
+        75.4,
+        805
+      ]
+    },
+    "single_emb": {
+      "GPT-4o": [
+        84.7,
+        51.2,
+        805
+      ],
+      "Qwen3-14B": [
+        91.4,
+        74.3,
+        805
+      ]
+    }
+  }
+}
