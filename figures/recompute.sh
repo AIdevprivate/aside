@@ -2,10 +2,12 @@
 # Recompute the AlpacaEval results and regenerate the figures end to end.
 #
 # Stages:
+#   0) fetch the AlpacaEval-805 dataset if missing
 #   1) generate model outputs (GPU; needs HF access to ISTA-MLCV/Qwen3_8B_*)
-#   2) build the text-davinci-003 references (+ the merged-208 subset of the 805)
+#   2) build the text-davinci-003 references (farm, merged-208, eval-208, eval-805)
 #   3) judge: local Qwen3-14B (qwen_judge.py) and GPT-4o (needs OPENAI_API_KEY)
-#   4) assemble figures/results.json (raw + length-controlled win-rates, both judges)
+#   4) assemble figures/results.json: the per-comparison leaderboards (comparisons),
+#      then the derived blocks utility_splits + utility_input805 (figures/compute_derived.py)
 #   5) regenerate the figures (figures/make_figures.py)
 #
 # Quick path: if you only changed the plotting, just run step 5:  python figures/make_figures.py
@@ -15,10 +17,14 @@ EVAL=experiments/evaluations/AlpacaEval
 DATA=experiments/data/tatsu-lab
 IN=/tmp/ae/in ; OUT=/tmp/ae/out ; QOUT=/tmp/ae/qwen_out
 GPT=weighted_alpaca_eval_gpt4o ; QWEN=weighted_alpaca_eval_qwen3_14b
-mkdir -p "$IN" "$OUT" "$QOUT" "$DATA/alpaca_farm_BUGGY" "$DATA/alpaca_farm_NOROT"
-export ASIDE_ATTN_IMPL=sdpa HF_HUB_ENABLE_HF_TRANSFER=1 TOKENIZERS_PARALLELISM=false IS_ALPACA_EVAL_2=True
+mkdir -p "$IN" "$OUT" "$QOUT" "$DATA/alpaca_eval" "$DATA/alpaca_farm_NOROT"
+export ASIDE_ATTN_IMPL=sdpa HF_HUB_ENABLE_HF_TRANSFER=1 TOKENIZERS_PARALLELISM=false IS_ALPACA_EVAL_2=True AE_DIR=/tmp/ae
 
 emb(){ case $1 in aside) echo forward_rot;; ise) echo ise;; single_emb) echo single_emb;; esac; }
+
+# ---------- 0) datasets ----------
+[ -f "$DATA/alpaca_eval/eval.json" ] || \
+  curl -sL "https://huggingface.co/datasets/tatsu-lab/alpaca_eval/resolve/main/alpaca_eval.json" -o "$DATA/alpaca_eval/eval.json"
 
 # ---------- 1) generate model outputs ----------
 for v in aside ise single_emb; do
@@ -41,24 +47,25 @@ norm=lambda s:" ".join(s.lower().split()); ev_by={norm(e['instruction']):e for e
 for v in ["aside","ise","single_emb"]:
     relabel(f"{B}/alpaca_farm/ISTA-MLCV_Qwen3_8B_{v}_l-1_s42.json", f"{v}_FIXED", f"{IN}/fixed_{v}.json")
     relabel(f"{B}/alpaca_eval/ISTA-MLCV_Qwen3_8B_{v}_l-1_s42.json", v,            f"{IN}/eval_{v}.json")
-    # merged-208 = the 208 input-bearing tasks as they appear inside the 805 (data in instruction)
     full=json.load(open(f"{B}/alpaca_eval/ISTA-MLCV_Qwen3_8B_{v}_l-1_s42.json"))
     keep=set(ev_by[norm(f['instruction']+"\n\n"+f['input'])]['instruction'] for f in fm)
     json.dump([dict(r, generator=f"{v}_MERGED") for r in full if r['instruction'] in keep], open(f"{IN}/merged208_{v}.json","w"))
 relabel(f"{B}/alpaca_farm_NOROT/aside_norot.json", "aside_NOROT", f"{IN}/norot_aside.json")
-# davinci-003 references (same answer text; only instruction layout differs)
-json.dump([{"instruction":x['instruction']+x['input'],"output":x['output'],"generator":"text_davinci_003"} for x in fm], open(f"{IN}/ref_farm_dav.json","w"))
-json.dump([{"instruction":ev_by[norm(f['instruction']+chr(10)+chr(10)+f['input'])]['instruction'],"output":f['output'],"generator":"text_davinci_003"} for f in fm], open(f"{IN}/ref_merged208_dav.json","w"))
+# davinci-003 references (same answer text; only the instruction layout differs across conditions)
+json.dump([{"instruction":x['instruction']+x['input'],"output":x['output'],"generator":"text_davinci_003"} for x in fm], open(f"{IN}/ref_farm_dav.json","w"))                       # farm davinci, keyed by instruction+input
+json.dump([{"instruction":ev_by[norm(f['instruction']+chr(10)+chr(10)+f['input'])]['instruction'],"output":f['output'],"generator":"text_davinci_003"} for f in fm], open(f"{IN}/ref_merged208_dav.json","w"))  # farm davinci, keyed by merged instruction
+json.dump([{"instruction":f['instruction']+f['input'],"output":ev_by[norm(f['instruction']+chr(10)+chr(10)+f['input'])]['output'],"generator":"text_davinci_003"} for f in fm], open(f"{IN}/ref_eval208_dav.json","w"))  # EVAL davinci for the 208, keyed by instruction+input
 json.dump(json.load(open(f"{B}/alpaca_eval/eval.json")), open(f"{IN}/ref_davinci003_805.json","w"))
 print("staged judge inputs + references in", IN)
 PY
 
-LABELS="aside_eval ise_eval single_emb_eval aside_fixed_vs_dav ise_fixed_vs_dav single_emb_fixed_vs_dav aside_merged208 ise_merged208 single_emb_merged208 aside_norot_vs_dav"
+LABELS="aside_eval ise_eval single_emb_eval aside_fixed_vs_dav ise_fixed_vs_dav single_emb_fixed_vs_dav aside_merged208 ise_merged208 single_emb_merged208 aside_norot_vs_dav aside_input208_eval ise_input208_eval single_emb_input208_eval"
 declare -A MODEL REF
 for v in aside ise single_emb; do
-  MODEL[${v}_eval]=eval_$v;            REF[${v}_eval]=ref_davinci003_805.json
-  MODEL[${v}_fixed_vs_dav]=fixed_$v;   REF[${v}_fixed_vs_dav]=ref_farm_dav.json
-  MODEL[${v}_merged208]=merged208_$v;  REF[${v}_merged208]=ref_merged208_dav.json
+  MODEL[${v}_eval]=eval_$v;                 REF[${v}_eval]=ref_davinci003_805.json
+  MODEL[${v}_fixed_vs_dav]=fixed_$v;        REF[${v}_fixed_vs_dav]=ref_farm_dav.json
+  MODEL[${v}_merged208]=merged208_$v;       REF[${v}_merged208]=ref_merged208_dav.json
+  MODEL[${v}_input208_eval]=fixed_$v;       REF[${v}_input208_eval]=ref_eval208_dav.json
 done
 MODEL[aside_norot_vs_dav]=norot_aside; REF[aside_norot_vs_dav]=ref_farm_dav.json
 
@@ -85,8 +92,9 @@ for l in labels:
     res["comparisons"].setdefault(l,{})
     if g: res["comparisons"][l]["GPT-4o"]=g
     if q: res["comparisons"][l]["Qwen3-14B"]=q
-json.dump(res, open("figures/results.json","w"), indent=2); print("updated figures/results.json")
+json.dump(res, open("figures/results.json","w"), indent=2); print("updated comparisons in figures/results.json")
 PY
+python figures/compute_derived.py     # utility_splits (full/data-208/no-data-597) + utility_input805 (full-805 data-in-input)
 
 # ---------- 5) figures ----------
 python figures/make_figures.py

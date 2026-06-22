@@ -150,6 +150,11 @@ COMPARISONS = [
     ("ise_merged208",        "merged208_ise.json",        "ref_merged208_dav.json"),
     ("single_emb_merged208", "merged208_single_emb.json", "ref_merged208_dav.json"),
     ("aside_norot_vs_dav", "norot_aside.json", "ref_farm_dav.json"),
+    # 208 data examples (data in input field) re-judged vs the eval davinci baseline;
+    # combined with the 597 no-data rows to build the full-805 data-in-input panel
+    ("aside_input208_eval",      "fixed_aside.json",      "ref_eval208_dav.json"),
+    ("ise_input208_eval",        "fixed_ise.json",        "ref_eval208_dav.json"),
+    ("single_emb_input208_eval", "fixed_single_emb.json", "ref_eval208_dav.json"),
 ]
 
 def main():
