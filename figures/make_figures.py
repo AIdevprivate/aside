@@ -33,14 +33,16 @@ def grp(a, d1, d2, l1, l2, title, c1="#4C72B0", c2="#DD8452"):
         a.text(i - w/2, p + 1, f"{p:.0f}", ha="center", fontsize=8)
         a.text(i + w/2, q + 1, f"{q:.0f}", ha="center", fontsize=8)
 
-# ---------- FIG 1: utility-805 + data placement (both judges), RAW ----------
-fig, ax = plt.subplots(1, 3, figsize=(16.5, 5))
+# ---------- FIG 1: utility (data in instruction vs data in input) + data placement (both judges), RAW ----------
+fig, ax = plt.subplots(1, 4, figsize=(22, 5))
 grp(ax[0], [raw(f"{v}_eval", "GPT-4o") for v in V], [raw(f"{v}_eval", "Qwen3-14B") for v in V],
-    "GPT-4o", "Qwen3-14B", "AlpacaEval-805 utility vs davinci-003\n(data merged IN INSTRUCTION). RAW win-rate")
-grp(ax[1], [raw(f"{v}_fixed_vs_dav", "GPT-4o") for v in V], [raw(f"{v}_merged208", "GPT-4o") for v in V],
+    "GPT-4o", "Qwen3-14B", "AlpacaEval-805 utility vs davinci-003\n(data merged IN INSTRUCTION). RAW")
+grp(ax[1], [raw(f"{v}_fixed_vs_dav", "GPT-4o") for v in V], [raw(f"{v}_fixed_vs_dav", "Qwen3-14B") for v in V],
+    "GPT-4o", "Qwen3-14B", "AlpacaFarm-208 utility vs davinci-003\n(data in INPUT field). RAW")
+grp(ax[2], [raw(f"{v}_fixed_vs_dav", "GPT-4o") for v in V], [raw(f"{v}_merged208", "GPT-4o") for v in V],
     "data in INPUT field", "data in INSTRUCTION", "Data placement (AlpacaFarm-208), GPT-4o\ninput-field vs instruction. RAW",
     c1="#8172B3", c2="#CCB974")
-grp(ax[2], [raw(f"{v}_fixed_vs_dav", "Qwen3-14B") for v in V], [raw(f"{v}_merged208", "Qwen3-14B") for v in V],
+grp(ax[3], [raw(f"{v}_fixed_vs_dav", "Qwen3-14B") for v in V], [raw(f"{v}_merged208", "Qwen3-14B") for v in V],
     "data in INPUT field", "data in INSTRUCTION", "Data placement (AlpacaFarm-208), Qwen3-14B\ninput-field vs instruction. RAW",
     c1="#8172B3", c2="#CCB974")
 plt.tight_layout(); plt.savefig(os.path.join(HERE, "winrates.png"), dpi=130, bbox_inches="tight")
@@ -67,4 +69,15 @@ for jn, a, c in zip(["GPT-4o", "Qwen3-14B"], ax, ["#4C72B0", "#DD8452"]):
     a.set_xticks(xx); a.set_xticklabels(labels3, fontsize=9); a.set_ylabel("raw win-rate %"); a.set_ylim(0, 100)
 plt.tight_layout(); plt.savefig(os.path.join(HERE, "aside_rotation_placement.png"), dpi=130, bbox_inches="tight")
 
-print("wrote winrates.png, utility_full_vs_data.png, aside_rotation_placement.png")
+# ---------- FIG 4: Qwen judge, aside WITHOUT rotation vs the other variants (AlpacaFarm-208, data in input field), RAW ----------
+fig, ax = plt.subplots(figsize=(8, 5.2)); xx = np.arange(4)
+cats = ["aside\n(rotation)", "aside\n(NO rotation)", "ise", "single_emb"]
+vals4 = [raw("aside_fixed_vs_dav", "Qwen3-14B"), raw("aside_norot_vs_dav", "Qwen3-14B"),
+         raw("ise_fixed_vs_dav", "Qwen3-14B"), raw("single_emb_fixed_vs_dav", "Qwen3-14B")]
+ax.bar(xx, vals4, 0.6, color=["#C44E52", "#55A868", "#4C72B0", "#4C72B0"])
+for i, val in enumerate(vals4): ax.text(i, val + 1, f"{val:.0f}", ha="center", fontsize=10)
+ax.set_title("Qwen3-14B judge: removing aside's rotation reaches ise/single_emb level\nAlpacaFarm-208 vs davinci-003 (data in INPUT field). RAW win-rate")
+ax.set_xticks(xx); ax.set_xticklabels(cats, fontsize=9); ax.set_ylabel("raw win-rate %"); ax.set_ylim(0, 100)
+plt.tight_layout(); plt.savefig(os.path.join(HERE, "aside_norot_qwen.png"), dpi=130, bbox_inches="tight")
+
+print("wrote winrates.png, utility_full_vs_data.png, aside_rotation_placement.png, aside_norot_qwen.png")
