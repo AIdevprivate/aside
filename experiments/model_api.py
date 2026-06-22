@@ -139,7 +139,7 @@ def load_single_emb_model_and_tokenizer(
         config=config,
         torch_dtype=model_dtype,
         quantization_config=bnb_config if quant_4bit else None,
-        attn_implementation="flash_attention_2",
+        attn_implementation=os.environ.get("ASIDE_ATTN_IMPL", "flash_attention_2"),
         low_cpu_mem_usage=True,
     )
 
